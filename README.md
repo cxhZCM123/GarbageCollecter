@@ -1,2 +1,7 @@
 # GarbageCollecter
-简单的C++垃圾回收器
+C++垃圾回收器
+
+##### Reference
+
+"The Art of C++".  Herbert Schildt.  2004
+
