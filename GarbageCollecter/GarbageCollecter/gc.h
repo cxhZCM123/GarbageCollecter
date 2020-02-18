@@ -196,8 +196,36 @@ public:
 		collect();
 	}
 
-	T *operator=(T *t){}
-	GCPtr &operator=(GCPtr &rv){}
+	T *operator=(T *t) {
+		list<GCInfo<T> >::iterator p;
+
+		p = findPtrInfo(addr);
+		p->refcount--;
+
+		p = findPtrInfo(t);
+		if (p != gclist.end()) {
+			p->refcount++;
+		}
+		else {
+			GCInfo<T> gcObj(t, size);
+			gclist.push_front(gcObj);
+		}
+
+		addr = t;
+		return t;
+	}
+	GCPtr &operator=(GCPtr &rv) {
+		list<GCInfo<T> >::iterator p;
+
+		p = findPtrInfo(addr);
+		p->refcount--;
+
+		p = findPtrInfo(rv.addr);
+		p->refcount++;
+
+		addr = rv.addr;
+		return rv;
+	}
 	T &operator*() { return *addr; }
 	T *operator->() { return addr; }
 	T &operator[](int i) { return addr[i]; }
@@ -258,8 +286,46 @@ public:
 		return memfreed;
 	}
 	static int gcListSize() { return gclist.size(); }
-	static void showList(){}
-	static void shutdown(){}
+	static void showList() {
+		list<GCInfo<T> >::iterator p;
+
+		cout << "gclist<" << typeid(T).name() << ", " << size << ">:" << endl;
+		cout << "memPtr refcount value" << endl;
+
+		if (gclist.begin() == gclist.end()) {
+			cout << " -- Empty -- \n\n";
+			return;
+		}
+
+		for (p = gclist.begin(); p != gclist.end(); p++) {
+			cout << "[" << (void *)p->memPtr << "]"
+				<< " " << p->refcount << " ";
+			if (p->memPtr) cout << " " << *p->memPtr;
+			else cout << " ---";
+			cout << endl;
+		}
+		cout << endl;
+	}
+	static void shutdown() {
+		if (gclistSize() == 0) return;
+
+		list<GCInfo<T> >::iterator p;
+
+		for (p = gclist.begin(); p != gclist.end(); p++) {
+			p->refcount = 0;
+		}
+
+#ifdef DISPLAY
+		cout << "Before collecting for shutdown() for "
+			<< typeid(T).name() << endl;
+#endif // DISPLAY
+		collate();
+
+#ifdef DISPLAY
+		cout << "After collecting for shutdown() for "
+			<< typeid(T).name() << endl;
+#endif // DISPLAY
+	}
 };
 
 template<class T, int size>

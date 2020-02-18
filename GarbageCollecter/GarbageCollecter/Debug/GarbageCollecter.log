@@ -1,3 +1,4 @@
 ﻿  main.cpp
+d:\cxh\code\garbagecollecter\garbagecollecter\garbagecollecter\main.cpp(10): warning C4101: “x”: 未引用的局部变量
   GarbageCollecter.vcxproj -> D:\cxh\code\GarbageCollecter\GarbageCollecter\Debug\GarbageCollecter.exe
   GarbageCollecter.vcxproj -> D:\cxh\code\GarbageCollecter\GarbageCollecter\Debug\GarbageCollecter.pdb (Full PDB)
