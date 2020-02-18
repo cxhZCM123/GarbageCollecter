@@ -1,13 +1,13 @@
 #include "gc.h"
-template<class T> class a {
-public:
-	static void print() {
-		cout << typeid(T).name() << endl;
-	}
-};
 
 int main() {
-	a<int> x;
-	x.print();
-	system("PAUSE");
+	GCPtr<int> p = new int(1);
+	GCPtr<int> q;
+	//GCPtr<int> t = p;
+
+	p = new int(2);
+	q = p;
+
+	GCPtr<int>::collect();
+	return 0;
 }

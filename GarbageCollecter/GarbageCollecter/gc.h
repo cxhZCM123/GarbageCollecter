@@ -107,10 +107,11 @@ public:
 		}
 		arraySize = size;
 	}
+
 };
 
 template<class T>
-bool operator==(GCInfo<T> &ob1, GCInfo<T> &ob2) {
+bool operator==(const GCInfo<T> &ob1, const GCInfo<T> &ob2) {
 	return ob1.memPtr == ob2.memPtr;
 }
 
@@ -168,11 +169,10 @@ public:
 	GCPtr(const GCPtr &ob) {
 		list<GCInfo<T> >::iterator p;
 
-		p = findPtrInfo(t);
+		p = findPtrInfo(ob.addr);
 		p->refcount++;
-
 		addr = ob.addr;
-		arraySize = ob.size;
+		arraySize = ob.arraySize;
 		if (arraySize > 0) isArray = true;
 		else isArray = false;
 
@@ -187,7 +187,7 @@ public:
 	~GCPtr() {
 		list<GCInfo<T> >::iterator p;
 
-		p = findPtrInfo(t);
+		p = findPtrInfo(addr);
 		if(p->refcount) p->refcount--;
 
 #ifdef DISPLAY
@@ -251,7 +251,7 @@ public:
 		bool memfreed = false;
 #ifdef DISPLAY
 		cout << "Before garbage collection for ";
-		showlist();
+		showList();
 #endif // DISPLAY
 
 		list<GCInfo<T> >::iterator p;
@@ -260,7 +260,7 @@ public:
 				if (p->refcount > 0) continue;
 
 				memfreed = true;
-				gclist.remove(*p);
+				
 				if (p->memPtr) {
 					if (p->isArray) {
 #ifdef DISPLAY
@@ -271,21 +271,22 @@ public:
 					}
 					else {
 #ifdef DISPLAY
-						cout << "Deleting:" << *(T *) p->arraySize << endl;
+						cout << "Deleting:" << *(T *) p->memPtr << endl;
 #endif // DISPLAY
 						delete p->memPtr;
 					}
 				}
+				p = gclist.erase(p);
 				break;
 			}
 		} while (p != gclist.end());
 #ifdef DISPLAY
 		cout << "After garbage collection for ";
-		showlist();
+		showList();
 #endif // DISPLAY
 		return memfreed;
 	}
-	static int gcListSize() { return gclist.size(); }
+	static int gclistSize() { return gclist.size(); }
 	static void showList() {
 		list<GCInfo<T> >::iterator p;
 
@@ -319,7 +320,7 @@ public:
 		cout << "Before collecting for shutdown() for "
 			<< typeid(T).name() << endl;
 #endif // DISPLAY
-		collate();
+		collect();
 
 #ifdef DISPLAY
 		cout << "After collecting for shutdown() for "
